@@ -137,18 +137,17 @@ def make_wordcloud(rest_name):
 ####### Barplot ######
 def make_barplot(rest_name):
     p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
-
-    for key, value in n_dict_10.items():
-        n_dict_10[key] = value*-1
-    n_dict_10 = dict(sorted(n_dict_10.items(), key=lambda item: item[1]))
-    n_dict_10.update(p_dict_10)
-    plt.bar(n_dict_10.keys(),n_dict_10.values(),
-        color=['r','r','r','r','r','r','r','r','r','r','b','b','b','b','b','b','b','b','b','b'])
-    plt.ylabel('freq')
-    plt.xlabel('words')
-    plt.xticks(rotation = 45)
-    plt.title('Why the restaurant is rated bad or good')
-    return plt.show()
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+    plt.suptitle('Why the restaurant is rated bad or good')
+    fig.text(0.5, 0, 'Words', ha='center')
+    fig.text(0, 0.5, 'Frequency', va='center', rotation='vertical')
+    axes[0].bar(n_dict_10.keys(),n_dict_10.values(), color='r', label='negative')
+    axes[0].tick_params(labelrotation=45)
+    axes[0].legend()
+    axes[1].bar(p_dict_10.keys(),p_dict_10.values(), color='b', label='positive')
+    axes[1].tick_params(labelrotation=45)
+    axes[1].legend()
+    return fig.tight_layout()
 
 if __name__ == "__main__":
     bus = get_bus_data()
