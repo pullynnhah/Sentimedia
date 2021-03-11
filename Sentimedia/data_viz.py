@@ -5,12 +5,12 @@ import spacy
 import scattertext as sct
 from wordcloud import WordCloud, STOPWORDS
 from Sentimedia.trainer import get_dicts
-
-
-
+import folium
+import folium.plugins as plugins
+import pickle
 
 def get_bus_data():
-    bus_data_path = 'yelp_academic_dataset_business.json'
+    bus_data_path = 'Sentimedia/data/yelp_academic_dataset_business.json'
     df = pd.read_json(bus_data_path, lines=True)
     df_open = df[df['is_open']==1]
 
@@ -19,13 +19,16 @@ def get_bus_data():
     df_restaurants = df_restaurants[df_restaurants.categories.str.contains("Restaurants")]
 
     df_rest_filter = df_restaurants[(df_restaurants.city == 'Boston') | (df_restaurants.city == 'Westerville')]
+    
+    df_rest_filter.to_pickle("bus_data.pkl")
+    print('Business data saved')
 
     return df_rest_filter
 
 
 def get_review_data():
     df_rest_filter = get_bus_data()
-    review_json_path = '../raw_data/yelp_academic_dataset_review.json'
+    review_json_path = 'Sentimedia/data/yelp_academic_dataset_review.json'
     size = 1000000
     review = pd.read_json(review_json_path, lines=True,
                       dtype={'review_id':str,'user_id':str,
@@ -42,13 +45,16 @@ def get_review_data():
         chunk_list.append(chunk_merged)
 
     df_review = pd.concat(chunk_list, ignore_index=True, join='outer', axis=0)
-    df_review = df_review[['name','city','review_stars','text']]
+    df_review = df_review[['name','city','review_stars','text', 'business_id']]
+    
+    df_review.to_pickle("review_data.pkl")
+    print('Review data saved')
 
     return df_review
 
 ######## folium_map ######
 def loc_city(city_name):
-    df_rest_filter = get_bus_data()
+    df_rest_filter = pd.read_pickle("bus_data.pkl")
     city = df_rest_filter[df_rest_filter['city'] == city_name].sort_values('stars')
     lon = city['longitude'].median()
     lat = city['latitude'].median()
@@ -61,11 +67,12 @@ def loc_city(city_name):
     return data, lon, lat
 
 def rest_coord(rest_name,city_name):
-    df_rest_filter = get_bus_data()
+    df_rest_filter = pd.read_pickle("bus_data.pkl")
     rest_data = df_rest_filter[(df_rest_filter.name == rest_name)&(df_rest_filter.city == city_name)][['latitude','longitude']].values.tolist()
     return rest_data
 
 def make_folium(city_name,rest_name,rating):
+    #import folium
     data, lon, lat = loc_city(city_name)
     rest_data = rest_coord(rest_name,city_name)
     m = folium.Map(location=[lat, lon], tiles="OpenStreetMap", zoom_start=11)
@@ -88,7 +95,7 @@ def good_bad_review(x):
     return 'bad'
 
 def get_rest_reviews(rest_name, city_name):
-    df_review = get_review_data()
+    df_review = pd.read_pickle("review_data.pkl")
     rest_reviews = df_review[(df_review.name == rest_name)&(df_review.city == city_name)]
     rest_reviews['class'] = rest_reviews.review_stars.map(good_bad_review)
     return rest_reviews
@@ -112,7 +119,7 @@ def get_sct_html(rest_name, city_name):
 
 ###### WordCloud #####
 def make_wordcloud(rest_name):
-    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name)
+    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
 
     wordcloud_good = WordCloud(background_color="white").generate_from_frequencies(p_dict_30)
     wordcloud_bad = WordCloud(background_color="white").generate_from_frequencies(n_dict_30)
@@ -129,16 +136,20 @@ def make_wordcloud(rest_name):
 
 ####### Barplot ######
 def make_barplot(rest_name):
-    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name)
+    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
 
     for key, value in n_dict_10.items():
         n_dict_10[key] = value*-1
     n_dict_10 = dict(sorted(n_dict_10.items(), key=lambda item: item[1]))
-    n_dict_10.update(n_dict_10)
-    plt.bar(n_dict_10.keys(),n_dict_5.values(),
+    n_dict_10.update(p_dict_10)
+    plt.bar(n_dict_10.keys(),n_dict_10.values(),
         color=['r','r','r','r','r','r','r','r','r','r','b','b','b','b','b','b','b','b','b','b'])
     plt.ylabel('freq')
     plt.xlabel('words')
     plt.xticks(rotation = 45)
     plt.title('Why the restaurant is rated bad or good')
     return plt.show()
+
+if __name__ == "__main__":
+    bus = get_bus_data()
+    rev = get_review_data()
