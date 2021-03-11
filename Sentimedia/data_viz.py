@@ -5,7 +5,7 @@ import spacy
 import scattertext as sct
 from wordcloud import WordCloud, STOPWORDS
 from Sentimedia.trainer import get_dicts
-from Sentimedia.data import get_bus_data, get_review_data
+
 
 
 
@@ -128,7 +128,7 @@ def make_wordcloud(rest_name):
     return fig.tight_layout()
 
 ####### Barplot ######
-def make_barplot():
+def make_barplot(rest_name):
     p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name)
 
     for key, value in n_dict_10.items():
