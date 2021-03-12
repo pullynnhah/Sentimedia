@@ -9,6 +9,11 @@ import folium
 import folium.plugins as plugins
 import pickle
 
+import streamlit as st
+from pyecharts.charts import WordCloud
+from pyecharts import options as opts
+from streamlit_echarts import st_pyecharts
+
 def get_bus_data():
     bus_data_path = 'Sentimedia/data/yelp_academic_dataset_business.json'
     df = pd.read_json(bus_data_path, lines=True)
@@ -133,6 +138,34 @@ def make_wordcloud(rest_name):
 
     return fig.tight_layout()
 
+def make_wordcloud_interactive(rest_name):
+    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
+    data_positive = [(k, str(v)) for k, v in p_dict_30.items()]
+    c_positive = (
+        WordCloud()
+        .add(series_name="frequent words", data_pair=data_positive, word_size_range=[6, 66])
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
+            ),
+            tooltip_opts=opts.TooltipOpts(is_show=True),
+        )
+    )
+
+    data_negative = [(k, v) for k, v in n_dict_30.items()]
+    c_negative = (
+        WordCloud()
+        .add(series_name="frequent words", data_pair=data_negative, word_size_range=[6, 66])
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
+            ),
+            tooltip_opts=opts.TooltipOpts(is_show=True),
+        )
+    )
+
+    return st_pyecharts(c_positive), st_pyecharts(c_negative)
+
 ####### Barplot ######
 def make_barplot(rest_name):
     p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
@@ -149,5 +182,31 @@ def make_barplot(rest_name):
     return fig.tight_layout()
 
 if __name__ == "__main__":
-    bus = get_bus_data()
-    rev = get_review_data()
+    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts("Mike's Pastry", pd.read_pickle("review_data.pkl"))
+    data_positive = [(k, str(v)) for k, v in p_dict_30.items()]
+    c_positive = (
+        WordCloud()
+        .add(series_name="frequent words", data_pair=data_positive, word_size_range=[6, 66])
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
+            ),
+            tooltip_opts=opts.TooltipOpts(is_show=True),
+        )
+    )
+
+    data_negative = [(k, str(v)) for k, v in n_dict_30.items()]
+    c_negative = (
+        WordCloud()
+        .add(series_name="frequent words", data_pair=data_negative, word_size_range=[6, 66])
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
+            ),
+            tooltip_opts=opts.TooltipOpts(is_show=True),
+        )
+    )
+
+    st.markdown(data_positive)
+    st_pyecharts(c_positive)
+    st_pyecharts(c_negative)
