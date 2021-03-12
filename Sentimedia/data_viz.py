@@ -19,7 +19,7 @@ def get_bus_data():
     df_restaurants = df_restaurants[df_restaurants.categories.str.contains("Restaurants")]
 
     df_rest_filter = df_restaurants[(df_restaurants.city == 'Boston') | (df_restaurants.city == 'Westerville')]
-    
+
     df_rest_filter.to_pickle("bus_data.pkl")
     print('Business data saved')
 
@@ -27,7 +27,7 @@ def get_bus_data():
 
 
 def get_review_data():
-    df_rest_filter = get_bus_data()
+    df_rest_filter = pd.read_pickle("bus_data.pkl")
     review_json_path = 'Sentimedia/data/yelp_academic_dataset_review.json'
     size = 1000000
     review = pd.read_json(review_json_path, lines=True,
@@ -46,7 +46,7 @@ def get_review_data():
 
     df_review = pd.concat(chunk_list, ignore_index=True, join='outer', axis=0)
     df_review = df_review[['name','city','review_stars','text', 'business_id']]
-    
+
     df_review.to_pickle("review_data.pkl")
     print('Review data saved')
 
@@ -62,7 +62,7 @@ def loc_city(city_name):
     stars_list=list(city['stars'].unique())
     for star in stars_list:
         subset=city[city['stars']==star]
-        data.append(subset[['latitude','longitude','stars']].values.tolist())
+        data.append(subset[['latitude','longitude','name','stars']].values.tolist())
     data = [item for sublist in data for item in sublist]
     return data, lon, lat
 
@@ -72,16 +72,15 @@ def rest_coord(rest_name,city_name):
     return rest_data
 
 def make_folium(city_name,rest_name,rating):
-    #import folium
     data, lon, lat = loc_city(city_name)
     rest_data = rest_coord(rest_name,city_name)
     m = folium.Map(location=[lat, lon], tiles="OpenStreetMap", zoom_start=11)
     marker_cluster = folium.plugins.MarkerCluster().add_to(m)
     for point in range(0, len(data)):
-        if data[point][:-1] in rest_data:
-            folium.Marker(data[point][:-1], icon=folium.Icon(color='red'), popup=rest_name).add_to(m)
+        if data[point][:-2] in rest_data:
+            folium.Marker(data[point][:-2], icon=folium.Icon(color='red',icon='glyphicon glyphicon-cutlery'), popup=rest_name).add_to(m)
         if data[point][-1] > rating:
-            folium.Marker(data[point][:-1],popup=str(data[point][-1])).add_to(marker_cluster)
+            folium.Marker(data[point][:-2],popup=f'{str(data[point][-2])}, {str(data[point][-1])} stars').add_to(marker_cluster)
     return m
 
 #interact(make_folium,city_name="Orlando",rest_name='Subway',rating=(0,5,0.5))
