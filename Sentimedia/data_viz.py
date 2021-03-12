@@ -34,7 +34,7 @@ def get_bus_data():
 def get_review_data():
     df_rest_filter = pd.read_pickle("bus_data.pkl")
     review_json_path = 'Sentimedia/data/yelp_academic_dataset_review.json'
-    size = 500000
+    size = 1000000
     review = pd.read_json(review_json_path, lines=True,
                       dtype={'review_id':str,'user_id':str,
                              'business_id':str,'stars':int,
