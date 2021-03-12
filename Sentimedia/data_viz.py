@@ -34,7 +34,7 @@ def get_bus_data():
 def get_review_data():
     df_rest_filter = pd.read_pickle("bus_data.pkl")
     review_json_path = 'Sentimedia/data/yelp_academic_dataset_review.json'
-    size = 1000000
+    size = 500000
     review = pd.read_json(review_json_path, lines=True,
                       dtype={'review_id':str,'user_id':str,
                              'business_id':str,'stars':int,
@@ -115,7 +115,7 @@ def get_sct_html(rest_name, city_name):
          category='good',
          category_name='Positive',
          not_category_name='Negative',
-         width_in_pixels=1000,
+         width_in_pixels=500,
          metadata=rest_reviews['class'])
     return open("rest_reviews-Vis.html", 'wb').write(html.encode('utf-8'))
 
@@ -164,7 +164,7 @@ def make_wordcloud_interactive(rest_name, stop_list_pos, stop_list_neg):
         )
     )
 
-    return c_positive, c_negative
+    return c_positive, c_negative, data_positive, data_negative
 
 ####### Barplot ######
 def make_barplot(rest_name):
