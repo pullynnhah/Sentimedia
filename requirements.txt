@@ -36,13 +36,12 @@ six>=1.14
 joblib
 memoized-property
 termcolor
-pickle
+
 
 #app
 streamlit
 pyecharts
 streamlit_echarts
 streamlit_folium
-base64
 requests
-time
+
