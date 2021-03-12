@@ -1,8 +1,10 @@
 mkdir -p ~/.streamlit/
 
+HEROKU_EMAIL_ADDRESS = "thiagomoreiraleite@gmail.com"
+
 echo "\
 [general]\n\
-email = \"${thiagomoreiraleite@gmail.com}\"\n\
+email = \"${HEROKU_EMAIL_ADDRESS}\"\n\
 " > ~/.streamlit/credentials.toml
 
 echo "\
