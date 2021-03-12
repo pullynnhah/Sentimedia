@@ -138,9 +138,9 @@ def make_wordcloud(rest_name):
 
     return fig.tight_layout()
 
-def make_wordcloud_interactive(rest_name):
+def make_wordcloud_interactive(rest_name, stop_list_pos, stop_list_neg):
     p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
-    data_positive = [(k, str(v)) for k, v in p_dict_30.items()]
+    data_positive = [(k, str(v)) for k, v in p_dict_30.items() if k not in stop_list_pos]
     c_positive = (
         WordCloud()
         .add(series_name="frequent words", data_pair=data_positive, word_size_range=[6, 66])
@@ -152,7 +152,7 @@ def make_wordcloud_interactive(rest_name):
         )
     )
 
-    data_negative = [(k, v) for k, v in n_dict_30.items()]
+    data_negative = [(k, str(v)) for k, v in n_dict_30.items() if k not in stop_list_neg]
     c_negative = (
         WordCloud()
         .add(series_name="frequent words", data_pair=data_negative, word_size_range=[6, 66])
@@ -164,7 +164,7 @@ def make_wordcloud_interactive(rest_name):
         )
     )
 
-    return st_pyecharts(c_positive), st_pyecharts(c_negative)
+    return c_positive, c_negative
 
 ####### Barplot ######
 def make_barplot(rest_name):
