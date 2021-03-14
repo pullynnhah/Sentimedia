@@ -39,34 +39,32 @@ st.set_page_config(
 
 #DEFAULT PARAMETERS
 city_name_input = "Boston"
-rest_name_input = "Longwood Galleria"
+rest_name_input = "Mike's Pastry"
 rating_input = 3
 
 #LAYING OUT THE SIDE BAR
 st.sidebar.markdown(f"""
   # CONTROL PANEL
-  ###
 """)
 
 st.sidebar.header('Map Selections')
 city_name_input = st.sidebar.text_input('City Name', 'Boston')
 rating_input = st.sidebar.slider('Rating: select a minimum', 0.0 , 5.0 , 3.0, 0.5)
-rest_name_input = st.sidebar.text_input('Restaurant Name', 'Longwood Galleria', key='rest_name_input')
+rest_name_input = st.sidebar.text_input('Business Name', 'Longwood Galleria', key='rest_name_input')
 
 st.sidebar.markdown(f"""
   #
 """)
 st.sidebar.header('Word Cloud and Bar Chart Selections')
 double_entry = st.sidebar.radio('Benchmark your business to others', ('Single View', 'Display Benchmark'))
-st.sidebar.write(double_entry)
 # double_entry = st.sidebar.checkbox('Benchmark your business to others')
 
 rest_name_input2 = 'Longwood Galleria'
-rest_name_input2 = st.sidebar.text_input('Restaurant Name', 'Longwood Galleria', key='rest_name_input2')
+rest_name_input2 = st.sidebar.text_input('Business Name', 'Longwood Galleria', key='rest_name_input2')
 if double_entry == 'Display Benchmark':
   st.sidebar.subheader('Select a business for Benchmarking')
   rest_name_input3 = 'Longwood Galleria'
-  rest_name_input3 = st.sidebar.text_input('Comparative Restaurant Name', 'Longwood Galleria', key='rest_name_input3')
+  rest_name_input3 = st.sidebar.text_input('Benchmark Business Name', 'Longwood Galleria', key='rest_name_input3')
 
 
 # LAYING OUT THE TOP SECTION OF THE APP
@@ -80,7 +78,7 @@ st.write(ELEMENT_HTML, unsafe_allow_html=True)
 row1_1, row1_2, row1_3 = st.beta_columns((10,1,15))
 with row1_1:
   st.markdown("""
-  ## Locate restaurants in the map by city and rating""")
+  ## Locate businesses in the map by city and rating""")
 
 
 with row1_2:
@@ -88,55 +86,95 @@ with row1_2:
 
 with row1_3:
   map = dv.make_folium(city_name_input, rest_name_input, rating_input)
-  st.write('Displaying the city of ', city_name_input.upper(), '. Restaurants named ', rest_name_input.upper(), ' are the red pins')
+  st.write('Displaying the city of ', city_name_input.upper(), '. Businesses named ', rest_name_input.upper(), ' are the red pins')
   folium_static(map)
 
 st.markdown("""# """)
 
 #STOP WORDS SELECTIONS
-def make_checkbox(words):
-  words_list = [x[0] for x in words]
-  checkbox1 = []
-  for word in words_list[:15]:
-    checkbox1.append(st.checkbox(word, key=f'{word}{words}'))
-  checkbox2 = []
-  for word in words_list[15:]:
-    checkbox2.append(st.checkbox(word, key=f'{word}{words}'))
-  return checkbox1, checkbox2
 
+# def make_checkbox(words):
+  # words_list = [x[0] for x in words]
+  # checkbox1 = []
+  # for word in words_list[:15]:
+  #   checkbox1.append(st.checkbox(word, key=f'{word}{words}'))
+  # checkbox2 = []
+  # for word in words_list[15:]:
+  #   checkbox2.append(st.checkbox(word, key=f'{word}{words}'))
+  # return checkbox1, checkbox2
+  
+def make_checkbox_one(words):
+  words_list = [x[0] for x in words[:10]]
+  checkbox = []
+  for word in words_list:
+      checkbox.append(st.checkbox(word, key=f'{word}{words}'))
+  return checkbox
+
+def make_checkbox_two(words):
+  words_list = [x[0] for x in words[11:20]]
+  checkbox = []
+  for word in words_list:
+      checkbox.append(st.checkbox(word, key=f'{word}{words}'))
+  return checkbox
+
+def make_checkbox_three(words):
+  words_list = [x[0] for x in words[21:]]
+  checkbox = []
+  for word in words_list:
+      checkbox.append(st.checkbox(word, key=f'{word}{words}'))
+  return checkbox
 
 #VISUALIZATIONS
+
+c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, [], [])
+# c_positive_bench, c_negative_bench, data_positive_bench, data_negative_bench = dv.make_wordcloud_interactive(rest_name_input3, [], [])
+
+
+
+
 if double_entry == 'Display Benchmark':
-  col1, col2, col3 = st.beta_columns((12,1,12))
+  col1, col2, col3 = st.beta_columns((12,10,12))
   with col1:
     HEADER_HTML = f"""
       <div><h2>Word Cloud for negative and positive reviews</h2>
       </div>
     """
     st.write(HEADER_HTML, unsafe_allow_html=True)
-    c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, [], [])
-    st_pyecharts(c_positive)
     st.sidebar.subheader("Improve visualizations by excluding potential stop words")
     st.sidebar.text('Pick stop words below for positive reviews')
-    make_checkbox(data_positive)
+    checkboxes_pos_one = make_checkbox_one(data_positive)
     st.markdown("""# """)
-    # make_checkbox(data_positive)
-    st_pyecharts(c_negative)
-    st.sidebar.subheader("Improve visualizations by excluding potential stop words")
-    st.sidebar.text('Pick stop words below for negative reviews')
-    # make_checkbox(data_negative)
+    checkboxes_pos_two = make_checkbox_two(data_positive)
     st.markdown("""# """)
-    HEADER_HTML3 = f"""
-      <div><h2>Word Cloud for comparative business </h2>
-      </div>
-    """
-    st.write(HEADER_HTML3, unsafe_allow_html=True)
-    c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input3, [], [])
-    st_pyecharts(c_positive)
-    st_pyecharts(c_negative)
+    checkboxes_pos_three = make_checkbox_three(data_positive)
+    words_list = [x[0] for x in data_positive]
+    checked_pos_words = [word for word, checked in zip(words_list, checkboxes_pos_one + checkboxes_pos_two + checkboxes_pos_three) if checked]
+    st.write(checked_pos_words)
+    if st.button("Remove positive stop words"):
+      c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, [])
+
+    # st_pyecharts(c_positive)
+
+
+    # st.markdown("""# """)
+    # # make_checkbox(data_positive)
+    # st_pyecharts(c_negative)
+    # st.sidebar.subheader("Improve visualizations by excluding potential stop words")
+    # st.sidebar.text('Pick stop words below for negative reviews')
+    # # make_checkbox(data_negative)
+    # st.markdown("""# """)
+    # HEADER_HTML3 = f"""
+    #   <div><h2>Word Cloud for comparative business </h2>
+    #   </div>
+    # """
+    # st.write(HEADER_HTML3, unsafe_allow_html=True)
+    # c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input3, [], [])
+    # st_pyecharts(c_positive)
+    # st_pyecharts(c_negative)
 
   with col2:
-    st.markdown("""# """)
+    # st.markdown("""# """)
+    st_pyecharts(c_positive)
 
   with col3:
     HEADER_HTML2 = f"""
@@ -175,68 +213,6 @@ else:
   barplot = dv.make_barplot(rest_name_input2)
   plt.show()
   st.pyplot(barplot)
-
-# b = (
-#     Bar()
-#     .add_xaxis(['food', 'place', 'court', 'good', 'lunch', 'mcdonalds', 'cvs', 'get', 'like', 'mall'])
-#     .add_yaxis(
-#         "Frequecy of most frequent words in negative reviews", [27, 24, 15, 12, 12, 11, 10, 10, 9, 9]
-#     )
-#     .set_global_opts(
-#         title_opts=opts.TitleOpts(
-#             title="Top words from negative reviews", subtitle="Frequency"
-#         ),
-#         toolbox_opts=opts.ToolboxOpts(),
-#     )
-# )
-# st_pyecharts(b)
-
-# data = [
-#     ("food", "27"),
-#     ("place", "24"),
-#     ("court", "15"),
-#     ("good", "12"),
-#     ("lunch", "12"),
-#     ("mcdonalds", "11"),
-#     ("cvs", "10"),
-#     ("get", "10"),
-#     ("like", "9"),
-#     ("mall", "9"),
-#     ("ive", "8"),
-#     ("places", "7"),
-#     ("would", "7"),
-#     ("burrito", "7"),
-#     ("parking", "7"),
-#     ("area", "7"),
-#     ("work", "6"),
-#     ("chinese", "6"),
-#     ("pretty", "6"),
-#     ("really", "6"),
-#     ("every", "6"),
-#     ("part", "6"),
-#     ("subway", "6"),
-#     ("go", "6"),
-#     ("one", "6"),
-#     ("options", "5"),
-#     ("galleria", "5"),
-#     ("never", "5"),
-#     ("people", "5"),
-#     ("decent", "5"),
-# ]
-
-# c = (
-#     WordCloud()
-#     .add(series_name="frequent words", data_pair=data, word_size_range=[6, 66])
-#     .set_global_opts(
-#         title_opts=opts.TitleOpts(
-#             title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
-#         ),
-#         tooltip_opts=opts.TooltipOpts(is_show=True),
-#     )
-# )
-# st_pyecharts(c)
-
-
 
 
 html = dv.get_sct_html(rest_name_input, city_name_input)
