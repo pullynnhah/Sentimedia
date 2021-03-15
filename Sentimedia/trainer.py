@@ -129,6 +129,35 @@ def get_dicts(rest_name, review_df):
     # Positive words returned first!
     return p_dict_10, p_dict_30, n_dict_10, n_dict_30
 
+def live_demo(text):
+    # Returns a prediction for live demonstration with a new set of reviews
+
+    # Preprocessing text
+    text = pd.Series(text)
+    text = text.map(clean_text)
+    feature_path = 'feature.pkl'
+    vectorizer = CountVectorizer(decode_error="replace", vocabulary=pickle.load(open(feature_path, "rb")))
+    text_bow = vectorizer.transform(text)
+    
+    # Reviews rating prediction
+    model = get_model()
+    text_predict = model.predict(text_bow)
+
+    return text_predict
+
+def update_data():
+    # Updates the dataset to include new reviews
+
+    # Merging old with new entries
+    old = pd.read_pickle("review_data.pkl")
+    new = pd.read_csv('live.csv')
+    updated = pd.concat([old, new], ignore_index=True)
+    
+    # Saving to a pickle file
+    updated.to_pickle("new_rev_data.pkl")
+
+    return
+
 if __name__ == "__main__":
     X, y = get_data()
     X, y = preprocess_data(X,y)
