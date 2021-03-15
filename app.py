@@ -1,5 +1,6 @@
 import streamlit as st
 import Sentimedia.data_viz as dv
+import Sentimedia.trainer as tr
 
 # import spacy_streamlit
 # from streamlit_lottie import st_lottie
@@ -24,7 +25,7 @@ st.set_page_config(
             layout="wide")
 
 # import numpy as np
-# import pandas as pd
+import pandas as pd
 
 # # import seaborn as sns
 # # import imageio
@@ -36,6 +37,14 @@ st.set_page_config(
 # import spacy
 # import scattertext as sct
 
+# # GET DATA
+# @st.cache
+# def get_cached_data():
+#   bus_data = dv.get_bus_data()
+#   review_data = dv.get_review_data()
+#   return bus_data, review_data
+
+# get_cached_data()
 
 #DEFAULT PARAMETERS
 city_name_input = "Boston"
@@ -65,6 +74,9 @@ if double_entry == 'Display Benchmark':
   st.sidebar.subheader('Select a business for Benchmarking')
   rest_name_input3 = st.sidebar.text_input('Benchmark Business Name', 'Burger King', key='rest_name_input3')
 
+st.set_option('deprecation.showfileUploaderEncoding', False)
+
+uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
 
 # LAYING OUT THE TOP SECTION OF THE APP
 
@@ -120,6 +132,9 @@ c_positive_bench, c_negative_bench, data_positive_bench, data_negative_bench = d
 b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, [], [])
 b_pos_bench, b_neg_bench = dv.make_barplot_interactive(rest_name_input3, [], [])
 
+if uploaded_file is not None:
+    data = pd.read_csv(uploaded_file)
+    st.write(data)
 
 if double_entry == 'Display Benchmark':
   HEADER_HTML = f"""
