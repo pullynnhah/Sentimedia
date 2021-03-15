@@ -75,7 +75,7 @@ ELEMENT_HTML = f"""
 """
 st.write(ELEMENT_HTML, unsafe_allow_html=True)
 
-row1_1, row1_2, row1_3 = st.beta_columns((10,1,15))
+row1_1, row1_2, row1_3 = st.beta_columns((8,2,13))
 with row1_1:
   st.markdown("""
   ## Locate businesses in the map by city and rating""")
@@ -111,14 +111,14 @@ def make_checkbox_one(words):
   return checkbox
 
 def make_checkbox_two(words):
-  words_list = [x[0] for x in words[11:20]]
+  words_list = [x[0] for x in words[10:20]]
   checkbox = []
   for word in words_list:
       checkbox.append(st.checkbox(word, key=f'{word}{words}'))
   return checkbox
 
 def make_checkbox_three(words):
-  words_list = [x[0] for x in words[21:]]
+  words_list = [x[0] for x in words[20:]]
   checkbox = []
   for word in words_list:
       checkbox.append(st.checkbox(word, key=f'{word}{words}'))
@@ -128,12 +128,12 @@ def make_checkbox_three(words):
 
 c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, [], [])
 # c_positive_bench, c_negative_bench, data_positive_bench, data_negative_bench = dv.make_wordcloud_interactive(rest_name_input3, [], [])
-
+b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, [], [])
 
 
 
 if double_entry == 'Display Benchmark':
-  col1, col2, col3 = st.beta_columns((12,10,12))
+  col1, col2, col3 = st.beta_columns((5,10,12))
   with col1:
     HEADER_HTML = f"""
       <div><h2>Word Cloud for negative and positive reviews</h2>
@@ -147,12 +147,12 @@ if double_entry == 'Display Benchmark':
     checkboxes_pos_two = make_checkbox_two(data_positive)
     st.markdown("""# """)
     checkboxes_pos_three = make_checkbox_three(data_positive)
-    words_list = [x[0] for x in data_positive]
-    checked_pos_words = [word for word, checked in zip(words_list, checkboxes_pos_one + checkboxes_pos_two + checkboxes_pos_three) if checked]
+    words_list_pos = [x[0] for x in data_positive]
+    checked_pos_words = [word for word, checked in zip(words_list_pos, checkboxes_pos_one + checkboxes_pos_two + checkboxes_pos_three) if checked]
     st.write(checked_pos_words)
     if st.button("Remove positive stop words"):
       c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, [])
-
+      b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, [])
     # st_pyecharts(c_positive)
 
 
@@ -174,7 +174,12 @@ if double_entry == 'Display Benchmark':
 
   with col2:
     # st.markdown("""# """)
-    st_pyecharts(c_positive)
+    st_pyecharts(c_positive,
+      theme={
+        "width": "800",
+        "height": "500",
+      },
+    )
 
   with col3:
     HEADER_HTML2 = f"""
@@ -182,40 +187,110 @@ if double_entry == 'Display Benchmark':
       </div>
     """
     st.write(HEADER_HTML2, unsafe_allow_html=True)
-    barplot = dv.make_barplot(rest_name_input2)
-    plt.show()
-    st.pyplot(barplot)
-    HEADER_HTML4 = f"""
-      <div><h2>Word Cloud for comparative business</h2>
-      </div>
-    """
-    st.write(HEADER_HTML4, unsafe_allow_html=True)
-    barplot = dv.make_barplot(rest_name_input3)
-    plt.show()
-    st.pyplot(barplot)
+
+    st_pyecharts(
+      b_pos,
+      theme={
+          # "width": "600",
+          # "height": "330",
+          "backgroundColor": "#f4cccc",
+          "textStyle": {"color": "#F63366"},
+      },
+    )
+
+
+    # barplot = dv.make_barplot(rest_name_input2)
+    # plt.show()
+    # st.pyplot(barplot)
+    # HEADER_HTML4 = f"""
+    #   <div><h2>Word Cloud for comparative business</h2>
+    #   </div>
+    # """
+    # st.write(HEADER_HTML4, unsafe_allow_html=True)
+    # barplot = dv.make_barplot(rest_name_input3)
+    # plt.show()
+    # st.pyplot(barplot)
 else:
-  HEADER_HTML = f"""
-    <div><h2>Word Cloud for negative and positive reviews</h2>
-    </div>
-  """
-  st.write(HEADER_HTML, unsafe_allow_html=True)
-  # wordcloud = dv.make_wordcloud(rest_name_input2)
-  # plt.show()
-  # st.pyplot(wordcloud)
-  c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, [], [])
-  st_pyecharts(c_positive)
-  st_pyecharts(c_negative)
-  HEADER_HTML2 = f"""
-    <div><h2>Bar Chart for negative and positive reviews</h2>
-    </div>
-  """
-  st.write(HEADER_HTML2, unsafe_allow_html=True)
-  barplot = dv.make_barplot(rest_name_input2)
-  plt.show()
-  st.pyplot(barplot)
+  # HEADER_HTML = f"""
+  #   <div><h2>Word Cloud for negative and positive reviews</h2>
+  #   </div>
+  # """
+  # st.write(HEADER_HTML, unsafe_allow_html=True)
+  st.subheader("Improve visualizations by excluding potential stop words")
+  st.text('Pick stop words below for positive reviews')
+#SINGLE VIEW POSITIVE REVIEWS VISUALIZATIONS AND STOPWORDS
+  col1, col2, col3, col4, col5, col6 = st.beta_columns((2,2,2,2,1,14))
+  with col1:
+    st.markdown("""# """)
+    checkboxes_pos_one = make_checkbox_one(data_positive)
+  with col2:
+    st.markdown("""# """)
+    checkboxes_pos_two = make_checkbox_two(data_positive)
+  with col3:
+    st.markdown("""# """)
+    checkboxes_pos_three = make_checkbox_three(data_positive)
+  with col4:
+    st.markdown("""# """)
+    words_list_pos = [x[0] for x in data_positive]
+    checked_pos_words = [word for word, checked in zip(words_list_pos, checkboxes_pos_one + checkboxes_pos_two + checkboxes_pos_three) if checked]
+    if st.button("Remove stop words POSITIVE"):
+      c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, [])
+      b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, [])
+  with col5:
+    st.markdown("""## """)
+  with col6:
+    st_pyecharts(c_positive,
+      theme={
+        "width": "1000",
+        "height": "800",
+      },
+    )
+    st_pyecharts(
+      b_pos,
+      theme={
+          "backgroundColor": "#f4cccc",
+          "textStyle": {"color": "#F63366"},
+      },
+    )
+  st.markdown("""## """)
+#SINGLE VIEW NEGATIVE REVIEWS VISUALIZATIONS AND STOPWORDS
+  col1, col2, col3, col4, col5, col6 = st.beta_columns((2,2,2,2,1,14))
+  with col1:
+    st.markdown("""# """)
+    checkboxes_neg_one = make_checkbox_one(data_negative)
+  with col2:
+    st.markdown("""# """)
+    checkboxes_neg_two = make_checkbox_two(data_negative)
+  with col3:
+    st.markdown("""# """)
+    checkboxes_neg_three = make_checkbox_three(data_negative)
+  with col4:
+    st.markdown("""# """)
+    words_list_neg = [x[0] for x in data_negative]
+    checked_neg_words = [word for word, checked in zip(words_list_neg, checkboxes_neg_one + checkboxes_neg_two + checkboxes_neg_three) if checked]
+    if st.button("Removestop words NEGATIVE"):
+      c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, [], checked_neg_words)
+      b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, [], checked_pos_words)
+  with col5:
+    st.markdown("""## """)
+  with col6:
+    st_pyecharts(c_negative,
+      theme={
+        "width": "1000",
+        "height": "800",
+      },
+    )
+    st_pyecharts(
+      b_neg,
+      theme={
+          "backgroundColor": "#f4cccc",
+          "textStyle": {"color": "#F63366"},
+      },
+    )
 
-
-html = dv.get_sct_html(rest_name_input, city_name_input)
+    
+st.markdown("""# """)
+html = dv.get_sct_html(rest_name_input2, city_name_input)
 
 HtmlFile = open("rest_reviews-Vis.html", 'r', encoding='utf-8')
 source_code = HtmlFile.read() 
