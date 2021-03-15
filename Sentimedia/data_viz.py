@@ -15,6 +15,7 @@ from pyecharts import options as opts
 from streamlit_echarts import st_pyecharts
 from pyecharts.charts import Bar
 
+
 def get_bus_data():
     bus_data_path = 'Sentimedia/data/yelp_academic_dataset_business.json'
     df = pd.read_json(bus_data_path, lines=True)
@@ -116,7 +117,7 @@ def get_sct_html(rest_name, city_name):
          category='good',
          category_name='Positive',
          not_category_name='Negative',
-         width_in_pixels=900,
+         width_in_pixels=1100,
          metadata=rest_reviews['class'])
     return open("rest_reviews-Vis.html", 'wb').write(html.encode('utf-8'))
 
@@ -147,7 +148,7 @@ def make_wordcloud_interactive(rest_name, stop_list_pos, stop_list_neg):
         .add(series_name="frequent words", data_pair=data_positive, word_size_range=[15, 90])
         .set_global_opts(
             title_opts=opts.TitleOpts(
-                title="POSTIVE REVIEWS", subtitle="Most frequent words", title_textstyle_opts=opts.TextStyleOpts(font_size=27)
+                title=f'Positive Reviews - {rest_name}', subtitle="Most frequent words", title_textstyle_opts=opts.TextStyleOpts(font_size=25)
             ),
             tooltip_opts=opts.TooltipOpts(is_show=True),
         )
@@ -159,7 +160,7 @@ def make_wordcloud_interactive(rest_name, stop_list_pos, stop_list_neg):
         .add(series_name="frequent words", data_pair=data_negative, word_size_range=[15, 90])
         .set_global_opts(
             title_opts=opts.TitleOpts(
-                title="NEGATIVE REVIEWS", subtitle="Most frequent words", title_textstyle_opts=opts.TextStyleOpts(font_size=27)
+                title=f'Negative Reviews - {rest_name}', subtitle="Most frequent words", title_textstyle_opts=opts.TextStyleOpts(font_size=25)
             ),
             tooltip_opts=opts.TooltipOpts(is_show=True),
         )
@@ -198,7 +199,7 @@ def make_barplot_interactive(rest_name, stop_list_pos, stop_list_neg):
         )
         .set_global_opts(
             title_opts=opts.TitleOpts(
-                title="NEGATIVE REVIEWS", title_textstyle_opts=opts.TextStyleOpts(font_size=27)
+                title="Positive Reviews", title_textstyle_opts=opts.TextStyleOpts(font_size=18), subtitle=f'{rest_name.upper()}', subtitle_textstyle_opts=opts.TextStyleOpts(font_size=18)
             )
         )
     )
@@ -210,7 +211,7 @@ def make_barplot_interactive(rest_name, stop_list_pos, stop_list_neg):
         )
         .set_global_opts(
             title_opts=opts.TitleOpts(
-                title="POSITIVE REVIEWS", title_textstyle_opts=opts.TextStyleOpts(font_size=27)
+                title="Negative Reviews", title_textstyle_opts=opts.TextStyleOpts(font_size=18), subtitle=f'{rest_name.upper()}', subtitle_textstyle_opts=opts.TextStyleOpts(font_size=18)
             )
         )
     )
