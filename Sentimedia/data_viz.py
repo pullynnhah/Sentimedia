@@ -9,6 +9,13 @@ import folium
 import folium.plugins as plugins
 import pickle
 
+import streamlit as st
+from pyecharts.charts import WordCloud
+from pyecharts import options as opts
+from streamlit_echarts import st_pyecharts
+from pyecharts.charts import Bar
+
+
 def get_bus_data():
     bus_data_path = 'Sentimedia/data/yelp_academic_dataset_business.json'
     df = pd.read_json(bus_data_path, lines=True)
@@ -19,7 +26,7 @@ def get_bus_data():
     df_restaurants = df_restaurants[df_restaurants.categories.str.contains("Restaurants")]
 
     df_rest_filter = df_restaurants[(df_restaurants.city == 'Boston') | (df_restaurants.city == 'Westerville')]
-    
+
     df_rest_filter.to_pickle("bus_data.pkl")
     print('Business data saved')
 
@@ -27,9 +34,9 @@ def get_bus_data():
 
 
 def get_review_data():
-    df_rest_filter = get_bus_data()
+    df_rest_filter = pd.read_pickle("bus_data.pkl")
     review_json_path = 'Sentimedia/data/yelp_academic_dataset_review.json'
-    size = 1000000
+    size = 500000
     review = pd.read_json(review_json_path, lines=True,
                       dtype={'review_id':str,'user_id':str,
                              'business_id':str,'stars':int,
@@ -46,7 +53,7 @@ def get_review_data():
 
     df_review = pd.concat(chunk_list, ignore_index=True, join='outer', axis=0)
     df_review = df_review[['name','city','review_stars','text', 'business_id']]
-    
+
     df_review.to_pickle("review_data.pkl")
     print('Review data saved')
 
@@ -62,7 +69,7 @@ def loc_city(city_name):
     stars_list=list(city['stars'].unique())
     for star in stars_list:
         subset=city[city['stars']==star]
-        data.append(subset[['latitude','longitude','stars']].values.tolist())
+        data.append(subset[['latitude','longitude','name','stars']].values.tolist())
     data = [item for sublist in data for item in sublist]
     return data, lon, lat
 
@@ -72,16 +79,15 @@ def rest_coord(rest_name,city_name):
     return rest_data
 
 def make_folium(city_name,rest_name,rating):
-    #import folium
     data, lon, lat = loc_city(city_name)
     rest_data = rest_coord(rest_name,city_name)
     m = folium.Map(location=[lat, lon], tiles="OpenStreetMap", zoom_start=11)
     marker_cluster = folium.plugins.MarkerCluster().add_to(m)
     for point in range(0, len(data)):
-        if data[point][:-1] in rest_data:
-            folium.Marker(data[point][:-1], icon=folium.Icon(color='red'), popup=rest_name).add_to(m)
+        if data[point][:-2] in rest_data:
+            folium.Marker(data[point][:-2], icon=folium.Icon(color='red',icon='glyphicon glyphicon-cutlery'), popup=rest_name).add_to(m)
         if data[point][-1] > rating:
-            folium.Marker(data[point][:-1],popup=str(data[point][-1])).add_to(marker_cluster)
+            folium.Marker(data[point][:-2],popup=f'{str(data[point][-2])}, {str(data[point][-1])} stars').add_to(marker_cluster)
     return m
 
 #interact(make_folium,city_name="Orlando",rest_name='Subway',rating=(0,5,0.5))
@@ -111,7 +117,7 @@ def get_sct_html(rest_name, city_name):
          category='good',
          category_name='Positive',
          not_category_name='Negative',
-         width_in_pixels=1000,
+         width_in_pixels=1100,
          metadata=rest_reviews['class'])
     return open("rest_reviews-Vis.html", 'wb').write(html.encode('utf-8'))
 
@@ -134,6 +140,34 @@ def make_wordcloud(rest_name):
 
     return fig.tight_layout()
 
+def make_wordcloud_interactive(rest_name, stop_list_pos, stop_list_neg):
+    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
+    data_positive = [(k, str(v)) for k, v in p_dict_30.items() if k not in stop_list_pos]
+    c_positive = (
+        WordCloud()
+        .add(series_name="frequent words", data_pair=data_positive, word_size_range=[15, 90])
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title=f'Positive Reviews - {rest_name}', subtitle="Most frequent words", title_textstyle_opts=opts.TextStyleOpts(font_size=25)
+            ),
+            tooltip_opts=opts.TooltipOpts(is_show=True),
+        )
+    )
+
+    data_negative = [(k, str(v)) for k, v in n_dict_30.items() if k not in stop_list_neg]
+    c_negative = (
+        WordCloud()
+        .add(series_name="frequent words", data_pair=data_negative, word_size_range=[15, 90])
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title=f'Negative Reviews - {rest_name}', subtitle="Most frequent words", title_textstyle_opts=opts.TextStyleOpts(font_size=25)
+            ),
+            tooltip_opts=opts.TooltipOpts(is_show=True),
+        )
+    )
+
+    return c_positive, c_negative, data_positive, data_negative
+
 ####### Barplot ######
 def make_barplot(rest_name):
     p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
@@ -149,6 +183,69 @@ def make_barplot(rest_name):
     axes[1].legend()
     return fig.tight_layout()
 
+def make_barplot_interactive(rest_name, stop_list_pos, stop_list_neg):
+    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts(rest_name, pd.read_pickle("review_data.pkl"))
+    data_positive = [(k, str(v)) for k, v in p_dict_10.items() if k not in stop_list_pos]
+    words_list_pos = [x[0] for x in data_positive]
+    freq_list_pos = [x[1] for x in data_positive]
+    data_negative = [(k, str(v)) for k, v in n_dict_10.items() if k not in stop_list_neg]
+    words_list_neg = [x[0] for x in data_negative]
+    freq_list_neg = [x[1] for x in data_negative]
+    b_pos = (
+        Bar()
+        .add_xaxis(words_list_pos)
+        .add_yaxis(
+            "Frequency found in reviews", freq_list_pos
+        )
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="Positive Reviews", title_textstyle_opts=opts.TextStyleOpts(font_size=18), subtitle=f'{rest_name.upper()}', subtitle_textstyle_opts=opts.TextStyleOpts(font_size=18)
+            )
+        )
+    )
+    b_neg = (
+        Bar()
+        .add_xaxis(words_list_neg)
+        .add_yaxis(
+            "Frequency found in reviews", freq_list_neg
+        )
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="Negative Reviews", title_textstyle_opts=opts.TextStyleOpts(font_size=18), subtitle=f'{rest_name.upper()}', subtitle_textstyle_opts=opts.TextStyleOpts(font_size=18)
+            )
+        )
+    )
+    return b_pos, b_neg
+
+
+
+
 if __name__ == "__main__":
-    bus = get_bus_data()
-    rev = get_review_data()
+    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts("Mike's Pastry", pd.read_pickle("review_data.pkl"))
+    data_positive = [(k, str(v)) for k, v in p_dict_30.items()]
+    c_positive = (
+        WordCloud()
+        .add(series_name="frequent words", data_pair=data_positive, word_size_range=[6, 66])
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
+            ),
+            tooltip_opts=opts.TooltipOpts(is_show=True),
+        )
+    )
+
+    data_negative = [(k, str(v)) for k, v in n_dict_30.items()]
+    c_negative = (
+        WordCloud()
+        .add(series_name="frequent words", data_pair=data_negative, word_size_range=[6, 66])
+        .set_global_opts(
+            title_opts=opts.TitleOpts(
+                title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
+            ),
+            tooltip_opts=opts.TooltipOpts(is_show=True),
+        )
+    )
+
+    st.markdown(data_positive)
+    st_pyecharts(c_positive)
+    st_pyecharts(c_negative)
