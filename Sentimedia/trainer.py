@@ -145,16 +145,16 @@ def live_demo(text):
 
     return text_predict
 
-def update_data():
+def update_data(new):
     # Updates the dataset to include new reviews
 
     # Merging old with new entries
     old = pd.read_pickle("review_data.pkl")
-    new = pd.read_csv('live.csv')
+    # new = pd.read_csv(csv)
     updated = pd.concat([old, new], ignore_index=True)
     
     # Saving to a pickle file
-    updated.to_pickle("new_rev_data.pkl")
+    updated.to_pickle("review_data.pkl")
 
     return
 

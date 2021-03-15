@@ -117,7 +117,7 @@ def get_sct_html(rest_name, city_name):
          category='good',
          category_name='Positive',
          not_category_name='Negative',
-         width_in_pixels=1100,
+         width_in_pixels=900,
          metadata=rest_reviews['class'])
     return open("rest_reviews-Vis.html", 'wb').write(html.encode('utf-8'))
 
@@ -221,31 +221,5 @@ def make_barplot_interactive(rest_name, stop_list_pos, stop_list_neg):
 
 
 if __name__ == "__main__":
-    p_dict_10, p_dict_30, n_dict_10, n_dict_30 = get_dicts("Mike's Pastry", pd.read_pickle("review_data.pkl"))
-    data_positive = [(k, str(v)) for k, v in p_dict_30.items()]
-    c_positive = (
-        WordCloud()
-        .add(series_name="frequent words", data_pair=data_positive, word_size_range=[6, 66])
-        .set_global_opts(
-            title_opts=opts.TitleOpts(
-                title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
-            ),
-            tooltip_opts=opts.TooltipOpts(is_show=True),
-        )
-    )
-
-    data_negative = [(k, str(v)) for k, v in n_dict_30.items()]
-    c_negative = (
-        WordCloud()
-        .add(series_name="frequent words", data_pair=data_negative, word_size_range=[6, 66])
-        .set_global_opts(
-            title_opts=opts.TitleOpts(
-                title="Wordcloud", title_textstyle_opts=opts.TextStyleOpts(font_size=23)
-            ),
-            tooltip_opts=opts.TooltipOpts(is_show=True),
-        )
-    )
-
-    st.markdown(data_positive)
-    st_pyecharts(c_positive)
-    st_pyecharts(c_negative)
+    get_bus_data()
+    get_review_data()

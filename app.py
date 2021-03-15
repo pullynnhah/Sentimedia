@@ -74,6 +74,7 @@ if double_entry == 'Display Benchmark':
   st.sidebar.subheader('Select a business for Benchmarking')
   rest_name_input3 = st.sidebar.text_input('Benchmark Business Name', 'Burger King', key='rest_name_input3')
 
+st.sidebar.header('Upload Reviews')
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
@@ -89,7 +90,12 @@ st.write(ELEMENT_HTML, unsafe_allow_html=True)
 row1_1, row1_2, row1_3 = st.beta_columns((8,2,13))
 with row1_1:
   st.markdown("""
-  ## Locate businesses in the map by city and rating""")
+  # Welcome to Sentimedia! 
+  ## A visual aid tool for sentiment analysis with your business reviews. 
+  ### Please, feel free to try different approaches in the control panel on the left, as well as our predictive model below.
+  ### Locate businesses in the map by city and rating, find your business and other to benchmark.
+  ### Enjoy the beautiful insights!
+""")
 
 
 with row1_2:
@@ -125,6 +131,16 @@ def make_checkbox_three(words):
       checkbox.append(st.checkbox(word, key=f'{word}{words}'))
   return checkbox
 
+@st.cache
+def cached_checkbox(data_list, check_one, check_two, check_three):
+  words_list = [x[0] for x in data_list]
+  checked_words = [word for word, checked in zip(words_list, check_one + check_two + check_three) if checked]
+  return checked_words
+
+@st.cache(allow_output_mutation=True)
+def button_states():
+    return {"pressed": None}
+
 #VISUALIZATIONS
 
 c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, [], [])
@@ -132,9 +148,30 @@ c_positive_bench, c_negative_bench, data_positive_bench, data_negative_bench = d
 b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, [], [])
 b_pos_bench, b_neg_bench = dv.make_barplot_interactive(rest_name_input3, [], [])
 
+HEADER_upload = f"""
+  <div><h2>FIND OUT THE SENTIMENT OF UPLOADED REVIEWS</h2>
+  </div>
+"""
+st.write(HEADER_upload, unsafe_allow_html=True)
+st.subheader("Upload reviews in CSV format on the Control Panel of the Sidebar to visualize if they are positive or negative")
 if uploaded_file is not None:
-    data = pd.read_csv(uploaded_file)
+  data = pd.read_csv(uploaded_file)
+  col1, col2 = st.beta_columns((2,2))
+  with col1:
     st.write(data)
+    output = pd.DataFrame(tr.live_demo(data.text))
+  with col2:
+    output.columns = ['Sentiment']
+    st.write(output)
+    count = pd.Series(tr.live_demo(data.text)).value_counts()
+    count = pd.DataFrame(count)
+    count.columns = ['Count']
+    st.write(count)
+    
+
+else:
+  st.markdown("""## """)
+  st.markdown("""## """)
 
 if double_entry == 'Display Benchmark':
   HEADER_HTML = f"""
@@ -156,9 +193,19 @@ if double_entry == 'Display Benchmark':
     st.markdown("""# """)
     checkboxes_pos_three = make_checkbox_three(data_positive)
     st.markdown("""# """)
-    words_list_pos = [x[0] for x in data_positive]
-    checked_pos_words = [word for word, checked in zip(words_list_pos, checkboxes_pos_one + checkboxes_pos_two + checkboxes_pos_three) if checked]
-    if st.button("Remove stop words", key="positive"):
+    # words_list_pos = [x[0] for x in data_positive]
+    # checked_pos_words = [word for word, checked in zip(words_list_pos, checkboxes_pos_one + checkboxes_pos_two + checkboxes_pos_three) if checked]
+    checked_pos_words = cached_checkbox(data_positive, checkboxes_pos_one, checkboxes_pos_two, checkboxes_pos_three)
+    # if st.button("Remove stop words", key="positive"):
+    #   c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, [])
+    #   b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, [])
+    press_button = st.button("Remove stop words", key="positive")
+    is_pressed = button_states()
+    if press_button:
+      # any changes need to be performed in place
+      is_pressed.update({"pressed": True})
+
+    if is_pressed["pressed"]:  # saved between sessions
       c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, [])
       b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, [])
   with col4:
@@ -192,11 +239,21 @@ if double_entry == 'Display Benchmark':
     st.markdown("""# """)
     checkboxes_pos_three_bench = make_checkbox_three(data_positive_bench)
     st.markdown("""# """)
-    words_list_pos_bench = [x[0] for x in data_positive_bench]
-    checked_pos_words_bench = [word for word, checked in zip(words_list_pos_bench, checkboxes_pos_one_bench + checkboxes_pos_two_bench + checkboxes_pos_three_bench) if checked]
-    if st.button("Remove stop words", key="positive_bench"):
+    # words_list_pos_bench = [x[0] for x in data_positive_bench]
+    # checked_pos_words_bench = [word for word, checked in zip(words_list_pos_bench, checkboxes_pos_one_bench + checkboxes_pos_two_bench + checkboxes_pos_three_bench) if checked]
+    # if st.button("Remove stop words", key="positive_bench"):
+    #   c_positive_bench, c_negative_bench, data_positive_bench, data_negative_bench = dv.make_wordcloud_interactive(rest_name_input3, checked_pos_words_bench, [])
+    #   b_pos_bench, b_neg_bench = dv.make_barplot_interactive(rest_name_input3, checked_pos_words, [])
+    checked_pos_words_bench = cached_checkbox(data_positive_bench, checkboxes_pos_one_bench, checkboxes_pos_two_bench, checkboxes_pos_three_bench)
+    press_button = st.button("Remove stop words", key="positive_bench")
+    is_pressed = button_states()
+    if press_button:
+      # any changes need to be performed in place
+      is_pressed.update({"pressed": True})
+
+    if is_pressed["pressed"]:
       c_positive_bench, c_negative_bench, data_positive_bench, data_negative_bench = dv.make_wordcloud_interactive(rest_name_input3, checked_pos_words_bench, [])
-      b_pos_bench, b_neg_bench = dv.make_barplot_interactive(rest_name_input3, checked_pos_words, [])
+      b_pos_bench, b_neg_bench = dv.make_barplot_interactive(rest_name_input3, checked_pos_words_bench, [])
   with col4:
     st.markdown("""## """)
   with col5:
@@ -228,9 +285,19 @@ if double_entry == 'Display Benchmark':
     st.markdown("""# """)
     checkboxes_neg_three = make_checkbox_three(data_negative)
     st.markdown("""# """)
-    words_list_neg = [x[0] for x in data_negative]
-    checked_neg_words = [word for word, checked in zip(words_list_neg, checkboxes_neg_one + checkboxes_neg_two + checkboxes_neg_three) if checked]
-    if st.button("Remove stop words", key="negative"):
+    # words_list_neg = [x[0] for x in data_negative]
+    # checked_neg_words = [word for word, checked in zip(words_list_neg, checkboxes_neg_one + checkboxes_neg_two + checkboxes_neg_three) if checked]
+    # if st.button("Remove stop words", key="negative"):
+    #   c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, [], checked_neg_words)
+    #   b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, [], checked_neg_words)
+    checked_neg_words = cached_checkbox(data_negative, checkboxes_neg_one, checkboxes_neg_two, checkboxes_neg_three)
+    press_button = st.button("Remove stop words", key="negative")
+    is_pressed = button_states()
+    if press_button:
+      # any changes need to be performed in place
+      is_pressed.update({"pressed": True})
+
+    if is_pressed["pressed"]:
       c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, [], checked_neg_words)
       b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, [], checked_neg_words)
   with col4:
@@ -264,11 +331,21 @@ if double_entry == 'Display Benchmark':
     st.markdown("""# """)
     checkboxes_neg_three_bench = make_checkbox_three(data_negative_bench)
     st.markdown("""# """)
-    words_list_neg_bench = [x[0] for x in data_negative_bench]
-    checked_neg_words_bench = [word for word, checked in zip(words_list_neg_bench, checkboxes_neg_one_bench + checkboxes_neg_two_bench + checkboxes_neg_three_bench) if checked]
-    if st.button("Remove stop words", key="negative_bench"):
+    # words_list_neg_bench = [x[0] for x in data_negative_bench]
+    # checked_neg_words_bench = [word for word, checked in zip(words_list_neg_bench, checkboxes_neg_one_bench + checkboxes_neg_two_bench + checkboxes_neg_three_bench) if checked]
+    # if st.button("Remove stop words", key="negative_bench"):
+    #   c_positive_bench, c_negative_bench, data_positive_bench, data_negative_bench = dv.make_wordcloud_interactive(rest_name_input3, [], checked_neg_words_bench)
+    #   b_pos_bench, b_neg_bench = dv.make_barplot_interactive(rest_name_input3, [], checked_neg_words)
+    checked_neg_words_bench = cached_checkbox(data_negative_bench, checkboxes_neg_one_bench, checkboxes_neg_two_bench, checkboxes_neg_three_bench)
+    press_button = st.button("Remove stop words", key="negative_bench")
+    is_pressed = button_states()
+    if press_button:
+      # any changes need to be performed in place
+      is_pressed.update({"pressed": True})
+
+    if is_pressed["pressed"]:
       c_positive_bench, c_negative_bench, data_positive_bench, data_negative_bench = dv.make_wordcloud_interactive(rest_name_input3, [], checked_neg_words_bench)
-      b_pos_bench, b_neg_bench = dv.make_barplot_interactive(rest_name_input3, [], checked_neg_words)
+      b_pos_bench, b_neg_bench = dv.make_barplot_interactive(rest_name_input3, [], checked_neg_words_bench)
   with col4:
     st.markdown("""## """)
   with col5:
@@ -310,11 +387,21 @@ else:
     st.markdown("""# """)
     checkboxes_pos_three = make_checkbox_three(data_positive)
     st.markdown("""# """)
-    words_list_pos = [x[0] for x in data_positive]
-    checked_pos_words = [word for word, checked in zip(words_list_pos, checkboxes_pos_one + checkboxes_pos_two + checkboxes_pos_three) if checked]
-    if st.button("Remove stop words", key="positive"):
+    # words_list_pos = [x[0] for x in data_positive]
+    # checked_pos_words = [word for word, checked in zip(words_list_pos, checkboxes_pos_one + checkboxes_pos_two + checkboxes_pos_three) if checked]
+    # if st.button("Remove stop words", key="positive"):
+    #   c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, [])
+    #   b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, checked_neg_words)
+    checked_pos_words = cached_checkbox(data_positive, checkboxes_pos_one, checkboxes_pos_two, checkboxes_pos_three)
+    press_button = st.button("Remove stop words", key="positive")
+    is_pressed = button_states()
+    if press_button:
+      # any changes need to be performed in place
+      is_pressed.update({"pressed": True})
+
+    if is_pressed["pressed"]:
       c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, [])
-      b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, checked_neg_words)
+      b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, [])
   with col4:
     st.markdown("""## """)
   with col5:
@@ -348,12 +435,22 @@ else:
     st.markdown("""# """)
     checkboxes_neg_three = make_checkbox_three(data_negative)
     st.markdown("""# """)
-    words_list_neg = [x[0] for x in data_negative]
-    checked_neg_words = [word for word, checked in zip(words_list_neg, checkboxes_neg_one + checkboxes_neg_two + checkboxes_neg_three) if checked]
-    if st.button("Remove stop words", key="negative"):
+    # words_list_neg = [x[0] for x in data_negative]
+    # checked_neg_words = [word for word, checked in zip(words_list_neg, checkboxes_neg_one + checkboxes_neg_two + checkboxes_neg_three) if checked]
+    # if st.button("Remove stop words", key="negative"):
+    #   c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, checked_neg_words)
+    #   b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, checked_neg_words)
+    #   st.write(checked_pos_words)
+    checked_neg_words = cached_checkbox(data_negative, checkboxes_neg_one, checkboxes_neg_two, checkboxes_neg_three)
+    press_button = st.button("Remove stop words", key="negative")
+    is_pressed = button_states()
+    if press_button:
+      # any changes need to be performed in place
+      is_pressed.update({"pressed": True})
+
+    if is_pressed["pressed"]:
       c_positive, c_negative, data_positive, data_negative = dv.make_wordcloud_interactive(rest_name_input2, checked_pos_words, checked_neg_words)
       b_pos, b_neg = dv.make_barplot_interactive(rest_name_input2, checked_pos_words, checked_neg_words)
-      st.write(checked_pos_words)
   with col4:
     st.markdown("""## """)
   with col5:
@@ -385,7 +482,7 @@ html = dv.get_sct_html(rest_name_input2, city_name_input)
 
 HtmlFile = open("rest_reviews-Vis.html", 'r', encoding='utf-8')
 source_code = HtmlFile.read() 
-components.html(source_code, height = 10000)
+components.html(source_code, height = 5000)
 
 
 #STYLING CODE
