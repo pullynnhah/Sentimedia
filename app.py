@@ -89,13 +89,17 @@ st.write(ELEMENT_HTML, unsafe_allow_html=True)
 
 row1_1, row1_2, row1_3 = st.beta_columns((8,2,13))
 with row1_1:
-  st.markdown("""
-  # Welcome to Sentimedia! 
-  ## A visual aid tool for sentiment analysis with your business reviews. 
-  ### Please, feel free to try different approaches in the control panel on the left, as well as our predictive model below.
-  ### Locate businesses in the map by city and rating, find your business and other to benchmark.
-  ### Enjoy the beautiful insights!
-""")
+  WELCOME_HTML = f"""
+    <div id="welcome"><h1>Welcome to Sentimedia!</h1>
+    </div>
+  """
+  st.write(WELCOME_HTML, unsafe_allow_html=True)
+  st.markdown(""" 
+    ## A visual aid tool for sentiment analysis with your business reviews. 
+    ### Please, feel free to try different approaches in the control panel on the left, as well as our predictive model below.
+    ### Locate businesses in the map by city and rating; find your business and other to benchmark.
+    ### Enjoy the beautiful insights!
+  """)
 
 
 with row1_2:
@@ -152,6 +156,9 @@ HEADER_upload = f"""
   <div><h2>FIND OUT THE SENTIMENT OF UPLOADED REVIEWS</h2>
   </div>
 """
+
+#DISPLAYING CSV UPLOADED DATA
+
 st.write(HEADER_upload, unsafe_allow_html=True)
 st.subheader("Upload reviews in CSV format on the Control Panel of the Sidebar to visualize if they are positive or negative")
 if uploaded_file is not None:
@@ -179,7 +186,7 @@ if double_entry == 'Display Benchmark':
   </div>
   """
   st.write(HEADER_HTML, unsafe_allow_html=True)
-  st.subheader("Improve visualizations by excluding stop words")
+  st.subheader("Improve the visualizations")
   st.text('select stop words below for POSITIVE reviews')
 #DOUBLE VIEW POSITIVE REVIEWS VISUALIZATIONS AND STOPWORDS
   col1, col2, col3, col4, col5 = st.beta_columns((2,2,2,1,14))
@@ -227,7 +234,7 @@ if double_entry == 'Display Benchmark':
           "subtitle_textstyle_opts": {"color": "#F63366"},
       },
     )
-  st.text('BENCHMARK: select stop words below for POSITIVE reviews')
+  st.text('BENCHMARK: select POSITIVE reviews stop words')
   col1, col2, col3, col4, col5 = st.beta_columns((2,2,2,1,14))
   with col1:
     st.markdown("""# """)
@@ -319,7 +326,7 @@ if double_entry == 'Display Benchmark':
           "subtitle_textstyle_opts": {"color": "#F63366"},
       },
     )
-  st.text('BENCHMARK: select stop words below for NEGATIVE reviews')
+  st.text('BENCHMARK: select NEGATIVE reviews stop words')
   col1, col2, col3, col4, col5 = st.beta_columns((2,2,2,1,14))
   with col1:
     st.markdown("""# """)
@@ -371,7 +378,7 @@ else:
     </div>
   """
   st.write(HEADER_HTML, unsafe_allow_html=True)
-  st.subheader("Improve visualizations by excluding stop words")
+  st.subheader("Improve the visualizations")
   st.text('select stop words below for POSITIVE reviews')
 #SINGLE VIEW POSITIVE REVIEWS VISUALIZATIONS AND STOPWORDS
   checked_pos_words = []
@@ -482,7 +489,7 @@ html = dv.get_sct_html(rest_name_input2, city_name_input)
 
 HtmlFile = open("rest_reviews-Vis.html", 'r', encoding='utf-8')
 source_code = HtmlFile.read() 
-components.html(source_code, height = 5000)
+components.html(source_code, height = 50000)
 
 
 #STYLING CODE
@@ -517,6 +524,8 @@ def set_png_as_page_bg2(png_file):
     height: 115px;
     background-size: contain;
     background-repeat: no-repeat;
+    margin-top: -80px;
+    background-position: center;
     }
     </style>
     ''' % bin_str
@@ -536,6 +545,10 @@ h2 {
 }
 p {
   color: black;
+}
+#welcome {
+  margin-top: 0;
+  padding-top: 0;
 }
 """  
 st.write(f'<style>{CSS}</style>', unsafe_allow_html=True)
