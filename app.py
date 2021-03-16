@@ -59,7 +59,7 @@ st.sidebar.markdown(f"""
 st.sidebar.header('Map Selections')
 city_name_input = st.sidebar.text_input('City Name', 'Boston')
 rating_input = st.sidebar.slider('Rating: select a minimum', 0.0 , 5.0 , 3.0, 0.5)
-rest_name_input = st.sidebar.text_input('Business Name', 'Longwood Galleria', key='rest_name_input')
+rest_name_input = st.sidebar.text_input('Business Name', 'Parish Cafe and Bar', key='rest_name_input')
 
 st.sidebar.markdown(f"""
   #
@@ -67,12 +67,12 @@ st.sidebar.markdown(f"""
 st.sidebar.header('Word Cloud and Bar Chart Selections')
 double_entry = st.sidebar.radio('Benchmark your business to others', ('Single View', 'Display Benchmark'))
 
-rest_name_input2 = 'Longwood Galleria'
-rest_name_input3 = 'Burger King'
-rest_name_input2 = st.sidebar.text_input('Business Name', 'Longwood Galleria', key='rest_name_input2')
+rest_name_input2 = 'Parish Cafe and Bar'
+rest_name_input3 = 'Bistro du Midi'
+rest_name_input2 = st.sidebar.text_input('Business Name', 'Parish Cafe and Bar', key='rest_name_input2')
 if double_entry == 'Display Benchmark':
   st.sidebar.subheader('Select a business for Benchmarking')
-  rest_name_input3 = st.sidebar.text_input('Benchmark Business Name', 'Burger King', key='rest_name_input3')
+  rest_name_input3 = st.sidebar.text_input('Benchmark Business Name', 'Bistro du Midi', key='rest_name_input3')
 
 st.sidebar.header('Upload Reviews')
 st.set_option('deprecation.showfileUploaderEncoding', False)
@@ -228,7 +228,7 @@ if double_entry == 'Display Benchmark':
     st_pyecharts(
       b_pos,
       theme={
-          "backgroundColor": "#f4cccc",
+          "backgroundColor": "#afc3a1c7",
           "textStyle": {"color": "#F63366"},
           "yaxis_name_pos" : "end",
           "subtitle_textstyle_opts": {"color": "#F63366"},
@@ -274,7 +274,7 @@ if double_entry == 'Display Benchmark':
     st_pyecharts(
       b_pos_bench,
       theme={
-          "backgroundColor": "#f4cccc",
+          "backgroundColor": "#afc3a1c7",
           "textStyle": {"color": "#F63366"},
           "yaxis_name_pos" : "end",
       },
@@ -422,7 +422,7 @@ else:
     st_pyecharts(
       b_pos,
       theme={
-          "backgroundColor": "#f4cccc",
+          "backgroundColor": "#afc3a1c7",
           "textStyle": {"color": "#F63366"},
           "yaxis_name_pos" : "end",
       },
@@ -471,7 +471,8 @@ else:
     st_pyecharts(
       b_neg,
       theme={
-          "backgroundColor": "#f4cccc",
+          # "backgroundColor": "#a4bbd5bf",
+          "backgroundColor": '#f4cccc',
           "textStyle": {"color": "#F63366"},
           "yaxis_name_pos" : "end",
       },
@@ -526,6 +527,15 @@ def set_png_as_page_bg2(png_file):
     background-repeat: no-repeat;
     margin-top: -80px;
     background-position: center;
+    }
+    .css-2trqyj {
+      border: 2px solid #f63366;
+      border-radius: 6px;
+      color: #f63366;
+    }
+    .css-2trqyj:hover {
+      border-color: a3a8b8;
+      color: a3a8b8;
     }
     </style>
     ''' % bin_str
