@@ -5,6 +5,6 @@
 raw_data/
 **/__pycache__/
 .env
-bus_data.pkl
-review_data.pkl
+# bus_data.pkl
+# review_data.pkl
 /Sentimedia/data

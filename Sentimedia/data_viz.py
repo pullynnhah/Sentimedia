@@ -26,6 +26,7 @@ def get_bus_data():
     df_restaurants = df_restaurants[df_restaurants.categories.str.contains("Restaurants")]
 
     df_rest_filter = df_restaurants[(df_restaurants.city == 'Boston') | (df_restaurants.city == 'Westerville')]
+    df_rest_filter = df_rest_filter.sort_values('review_count', ascending=False).head(100)
 
     df_rest_filter.to_pickle("bus_data.pkl")
     print('Business data saved')
@@ -42,7 +43,7 @@ def get_review_data():
                              'business_id':str,'stars':int,
                              'date':str,'text':str,'useful':int,
                              'funny':int,'cool':int},
-                      chunksize=size)
+                      chunksize=size,nrows=3000000)
 
     chunk_list = []
     for chunk_review in review:
@@ -145,7 +146,7 @@ def make_wordcloud_interactive(rest_name, stop_list_pos, stop_list_neg):
     data_positive = [(k, str(v)) for k, v in p_dict_30.items() if k not in stop_list_pos]
     c_positive = (
         WordCloud()
-        .add(series_name="frequent words", data_pair=data_positive, word_size_range=[15, 90])
+        .add(series_name="frequent words", data_pair=data_positive, word_size_range=[15, 70])
         .set_global_opts(
             title_opts=opts.TitleOpts(
                 title=f'Positive Reviews - {rest_name}', subtitle="Most frequent words", title_textstyle_opts=opts.TextStyleOpts(font_size=25)
@@ -157,7 +158,7 @@ def make_wordcloud_interactive(rest_name, stop_list_pos, stop_list_neg):
     data_negative = [(k, str(v)) for k, v in n_dict_30.items() if k not in stop_list_neg]
     c_negative = (
         WordCloud()
-        .add(series_name="frequent words", data_pair=data_negative, word_size_range=[15, 90])
+        .add(series_name="frequent words", data_pair=data_negative, word_size_range=[15, 70])
         .set_global_opts(
             title_opts=opts.TitleOpts(
                 title=f'Negative Reviews - {rest_name}', subtitle="Most frequent words", title_textstyle_opts=opts.TextStyleOpts(font_size=25)
@@ -195,7 +196,7 @@ def make_barplot_interactive(rest_name, stop_list_pos, stop_list_neg):
         Bar()
         .add_xaxis(words_list_pos)
         .add_yaxis(
-            "Frequency found in reviews", freq_list_pos
+            "Frequency found in reviews", freq_list_pos, color = "#2f8232"
         )
         .set_global_opts(
             title_opts=opts.TitleOpts(
